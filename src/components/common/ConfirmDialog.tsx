@@ -22,18 +22,18 @@ export function ConfirmDialog({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end bg-black/40 p-4 sm:items-center sm:justify-center">
+    <div role="dialog" aria-modal="true" aria-labelledby="confirm-dialog-title" className="fixed inset-0 z-40 flex items-end bg-black/40 p-4 sm:items-center sm:justify-center">
       <div className="w-full max-w-sm rounded-lg bg-white p-5 shadow-soft">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-ink">{title}</h2>
+            <h2 id="confirm-dialog-title" className="text-lg font-semibold text-ink">{title}</h2>
             <p className="mt-2 text-sm leading-6 text-neutral-600">{description}</p>
           </div>
           <button
             type="button"
             aria-label="닫기"
             onClick={onClose}
-            className="rounded-full p-2 text-neutral-500 hover:bg-neutral-100"
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-full p-2 text-neutral-500 hover:bg-neutral-100"
           >
             <X size={18} />
           </button>

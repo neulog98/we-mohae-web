@@ -9,6 +9,7 @@ import { useCouple } from "@/hooks/useCouple";
 import { joinCoupleByInviteCode, refreshInviteCode } from "@/features/couple/coupleService";
 import { useToast } from "@/components/common/Toast";
 import type { UserProfile } from "@/types/domain";
+import { copyTextToClipboard } from "@/utils/clipboard";
 
 export default function InvitePage() {
   return (
@@ -26,8 +27,12 @@ function InviteContent({ profile }: { profile: UserProfile }) {
 
   async function copyCode() {
     if (!couple?.inviteCode) return;
-    await navigator.clipboard.writeText(couple.inviteCode);
-    showToast("초대코드를 복사했어요.", "success");
+    try {
+      await copyTextToClipboard(couple.inviteCode);
+      showToast("초대코드를 복사했어요.", "success");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "초대코드 복사에 실패했어요.", "error");
+    }
   }
 
   async function handleRefresh() {
@@ -57,10 +62,10 @@ function InviteContent({ profile }: { profile: UserProfile }) {
               <div className="mt-3 flex items-center justify-between gap-3">
                 <strong className="text-3xl tracking-[0.18em] text-ink">{couple?.inviteCode ?? "--------"}</strong>
                 <div className="flex gap-2">
-                  <button aria-label="초대코드 복사" onClick={copyCode} className="rounded-md bg-neutral-100 p-3 text-ink">
+                  <button aria-label="초대코드 복사" onClick={copyCode} className="flex min-h-11 min-w-11 items-center justify-center rounded-md bg-neutral-100 p-3 text-ink">
                     <Copy size={18} />
                   </button>
-                  <button aria-label="초대코드 재생성" onClick={handleRefresh} className="rounded-md bg-neutral-100 p-3 text-ink">
+                  <button aria-label="초대코드 재생성" onClick={handleRefresh} className="flex min-h-11 min-w-11 items-center justify-center rounded-md bg-neutral-100 p-3 text-ink">
                     <RefreshCw size={18} />
                   </button>
                 </div>

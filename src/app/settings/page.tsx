@@ -13,6 +13,7 @@ import { removeCurrentNativeFcmToken, requestAndSaveFcmToken } from "@/features/
 import { useCouple } from "@/hooks/useCouple";
 import { useToast } from "@/components/common/Toast";
 import type { CoupleMode, UserProfile } from "@/types/domain";
+import { copyTextToClipboard } from "@/utils/clipboard";
 
 export default function SettingsPage() {
   return (
@@ -31,8 +32,12 @@ function SettingsContent({ profile }: { profile: UserProfile }) {
 
   async function handleCopyCode() {
     if (!couple?.inviteCode) return;
-    await navigator.clipboard.writeText(couple.inviteCode);
-    showToast("초대코드를 복사했어요.", "success");
+    try {
+      await copyTextToClipboard(couple.inviteCode);
+      showToast("초대코드를 복사했어요.", "success");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "초대코드 복사에 실패했어요.", "error");
+    }
   }
 
   async function handleRequestNotification() {

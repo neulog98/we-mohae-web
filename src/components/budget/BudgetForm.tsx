@@ -84,11 +84,11 @@ export function BudgetForm({
   }
 
   return (
-    <div className="fixed inset-0 z-40 overflow-y-auto bg-cloud">
+    <div role="dialog" aria-modal="true" aria-labelledby="budget-form-title" className="fixed inset-0 z-40 overflow-y-auto bg-cloud">
       <form onSubmit={handleSubmit} className="mx-auto min-h-screen w-full max-w-md pb-28">
         <header className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-200 bg-white px-5 py-4">
-          <h2 className="text-lg font-bold text-ink">{item ? "예산 항목 수정" : "예산 항목 추가"}</h2>
-          <button type="button" aria-label="예산 폼 닫기" onClick={onCancel} className="rounded-md bg-neutral-100 p-2 text-neutral-600">
+          <h2 id="budget-form-title" className="text-lg font-bold text-ink">{item ? "예산 항목 수정" : "예산 항목 추가"}</h2>
+          <button type="button" aria-label="예산 폼 닫기" onClick={onCancel} className="flex min-h-11 min-w-11 items-center justify-center rounded-md bg-neutral-100 p-2 text-neutral-600">
             <X size={19} />
           </button>
         </header>
