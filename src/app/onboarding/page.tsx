@@ -6,6 +6,7 @@ import { AuthGate } from "@/components/layout/AuthGate";
 import { createCouple } from "@/features/couple/coupleService";
 import type { CoupleMode } from "@/types/domain";
 import { useToast } from "@/components/common/Toast";
+import { getUserFacingErrorMessage } from "@/utils/errors";
 
 export default function OnboardingPage() {
   return (
@@ -25,7 +26,7 @@ function OnboardingContent({ uid }: { uid: string }) {
       showToast("모드가 설정됐어요.", "success");
       router.replace("/invite");
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "온보딩에 실패했어요.", "error");
+      showToast(getUserFacingErrorMessage(error, "온보딩에 실패했어요."), "error");
     }
   }
 

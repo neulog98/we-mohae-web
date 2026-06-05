@@ -15,6 +15,7 @@ import {
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { auth, db, isFirebaseConfigured } from "@/lib/firebase/client";
 import type { UserProfile } from "@/types/domain";
+import { getErrorCode, getUserFacingErrorMessage } from "@/utils/errors";
 
 function assertFirebaseConfigured() {
   if (!isFirebaseConfigured) {
@@ -23,10 +24,7 @@ function assertFirebaseConfigured() {
 }
 
 export function getAuthErrorMessage(error: unknown) {
-  const code =
-    typeof error === "object" && error !== null && "code" in error && typeof error.code === "string"
-      ? error.code
-      : null;
+  const code = getErrorCode(error);
 
   switch (code) {
     case "auth/invalid-credential":
@@ -46,7 +44,7 @@ export function getAuthErrorMessage(error: unknown) {
     case "auth/network-request-failed":
       return "네트워크 연결을 확인한 후 다시 시도해주세요.";
     default:
-      return error instanceof Error ? error.message : "인증 처리에 실패했어요. 잠시 후 다시 시도해주세요.";
+      return getUserFacingErrorMessage(error, "인증 처리에 실패했어요. 잠시 후 다시 시도해주세요.");
   }
 }
 
@@ -105,10 +103,7 @@ export async function sendPasswordResetEmailToUser(email: string) {
   try {
     await sendPasswordResetEmail(auth, email.trim());
   } catch (error) {
-    const code =
-      typeof error === "object" && error !== null && "code" in error && typeof error.code === "string"
-        ? error.code
-        : null;
+    const code = getErrorCode(error);
     // 계정 존재 여부를 외부에 노출하지 않는다.
     if (code === "auth/user-not-found") return;
     throw error;

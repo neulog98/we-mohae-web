@@ -16,6 +16,7 @@ import { useCouple } from "@/hooks/useCouple";
 import { useUpcomingWindowSchedules } from "@/hooks/useSchedules";
 import { formatCurrency, formatKoreanDate } from "@/lib/date/format";
 import { budgetCategories, type BudgetCategory, type BudgetItem, type UserProfile } from "@/types/domain";
+import { getUserFacingErrorMessage } from "@/utils/errors";
 
 export default function BudgetPage() {
   return (
@@ -161,7 +162,7 @@ function BudgetContent({ profile }: { profile: UserProfile }) {
               setFormOpen(false);
               setEditing(null);
             } catch (error) {
-              showToast(error instanceof Error ? error.message : "예산 저장에 실패했어요.", "error");
+              showToast(getUserFacingErrorMessage(error, "예산 저장에 실패했어요."), "error");
             }
           }}
         />
@@ -173,9 +174,13 @@ function BudgetContent({ profile }: { profile: UserProfile }) {
         onClose={() => setDeleteTarget(null)}
         onConfirm={async () => {
           if (!profile.coupleId || !deleteTarget) return;
-          await deleteBudgetItem(profile.coupleId, deleteTarget.budgetId);
-          setDeleteTarget(null);
-          showToast("예산 항목을 삭제했어요.", "success");
+          try {
+            await deleteBudgetItem(profile.coupleId, deleteTarget.budgetId);
+            setDeleteTarget(null);
+            showToast("예산 항목을 삭제했어요.", "success");
+          } catch (error) {
+            showToast(getUserFacingErrorMessage(error, "예산 항목 삭제에 실패했어요."), "error");
+          }
         }}
       />
     </AppShell>

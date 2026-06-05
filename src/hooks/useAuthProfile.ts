@@ -6,6 +6,7 @@ import type { User } from "firebase/auth";
 import { db } from "@/lib/firebase/client";
 import type { UserProfile } from "@/types/domain";
 import { ensureUserProfile, subscribeAuth } from "@/features/auth/authService";
+import { getUserFacingErrorMessage } from "@/utils/errors";
 
 export function useAuthProfile() {
   const [user, setUser] = useState<User | null>(null);
@@ -32,7 +33,7 @@ export function useAuthProfile() {
           setLoading(false);
         });
       } catch (nextError) {
-        setError(nextError instanceof Error ? nextError.message : "인증 정보를 불러오지 못했어요.");
+        setError(getUserFacingErrorMessage(nextError, "인증 정보를 불러오지 못했어요."));
         setLoading(false);
       }
     });

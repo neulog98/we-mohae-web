@@ -10,6 +10,7 @@ import { joinCoupleByInviteCode, refreshInviteCode } from "@/features/couple/cou
 import { useToast } from "@/components/common/Toast";
 import type { UserProfile } from "@/types/domain";
 import { copyTextToClipboard } from "@/utils/clipboard";
+import { getUserFacingErrorMessage } from "@/utils/errors";
 
 export default function InvitePage() {
   return (
@@ -31,7 +32,7 @@ function InviteContent({ profile }: { profile: UserProfile }) {
       await copyTextToClipboard(couple.inviteCode);
       showToast("초대코드를 복사했어요.", "success");
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "초대코드 복사에 실패했어요.", "error");
+      showToast(getUserFacingErrorMessage(error, "초대코드 복사에 실패했어요."), "error");
     }
   }
 
@@ -48,7 +49,7 @@ function InviteContent({ profile }: { profile: UserProfile }) {
       showToast("파트너와 연결됐어요.", "success");
       router.replace("/home");
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "초대코드 연결에 실패했어요.", "error");
+      showToast(getUserFacingErrorMessage(error, "초대코드 연결에 실패했어요."), "error");
     }
   }
 

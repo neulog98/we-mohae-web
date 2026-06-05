@@ -14,6 +14,7 @@ import { useCouple } from "@/hooks/useCouple";
 import { useToast } from "@/components/common/Toast";
 import type { CoupleMode, UserProfile } from "@/types/domain";
 import { copyTextToClipboard } from "@/utils/clipboard";
+import { getUserFacingErrorMessage } from "@/utils/errors";
 
 export default function SettingsPage() {
   return (
@@ -36,7 +37,7 @@ function SettingsContent({ profile }: { profile: UserProfile }) {
       await copyTextToClipboard(couple.inviteCode);
       showToast("초대코드를 복사했어요.", "success");
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "초대코드 복사에 실패했어요.", "error");
+      showToast(getUserFacingErrorMessage(error, "초대코드 복사에 실패했어요."), "error");
     }
   }
 
@@ -46,7 +47,7 @@ function SettingsContent({ profile }: { profile: UserProfile }) {
       await requestAndSaveFcmToken(profile.coupleId, profile.uid);
       showToast("알림 권한과 FCM 토큰을 저장했어요.", "success");
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "알림 설정에 실패했어요.", "error");
+      showToast(getUserFacingErrorMessage(error, "알림 설정에 실패했어요."), "error");
     }
   }
 
@@ -190,7 +191,7 @@ function SettingsContent({ profile }: { profile: UserProfile }) {
             setDisconnectConfirmOpen(false);
             showToast("커플 연결을 해제했어요.", "success");
           } catch (error) {
-            showToast(error instanceof Error ? error.message : "커플 연결 해제에 실패했어요.", "error");
+            showToast(getUserFacingErrorMessage(error, "커플 연결 해제에 실패했어요."), "error");
           }
         }}
       />
@@ -211,7 +212,7 @@ function SettingsContent({ profile }: { profile: UserProfile }) {
             showToast("사용 모드를 변경했어요.", "success");
             setPendingMode(null);
           } catch (error) {
-            showToast(error instanceof Error ? error.message : "모드 변경에 실패했어요.", "error");
+            showToast(getUserFacingErrorMessage(error, "모드 변경에 실패했어요."), "error");
           }
         }}
       />

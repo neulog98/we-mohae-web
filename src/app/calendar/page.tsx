@@ -15,6 +15,7 @@ import { useCouple } from "@/hooks/useCouple";
 import { useMonthSchedules } from "@/hooks/useSchedules";
 import { formatKoreanDate, formatKoreanDateTime } from "@/lib/date/format";
 import type { CoupleMode, Schedule, UserProfile } from "@/types/domain";
+import { getUserFacingErrorMessage } from "@/utils/errors";
 
 export default function CalendarPage() {
   return (
@@ -143,7 +144,7 @@ function CalendarContent({ profile }: { profile: UserProfile }) {
                 showToast("일정을 추가했어요.", "success");
               }
             } catch (error) {
-              showToast(error instanceof Error ? error.message : "일정 저장에 실패했어요.", "error");
+              showToast(getUserFacingErrorMessage(error, "일정 저장에 실패했어요."), "error");
             }
           }}
         />
@@ -155,9 +156,13 @@ function CalendarContent({ profile }: { profile: UserProfile }) {
         onClose={() => setDeleteTarget(null)}
         onConfirm={async () => {
           if (!profile.coupleId || !deleteTarget) return;
-          await deleteSchedule(profile.coupleId, deleteTarget.scheduleId);
-          setDeleteTarget(null);
-          showToast("일정을 삭제했어요.", "success");
+          try {
+            await deleteSchedule(profile.coupleId, deleteTarget.scheduleId);
+            setDeleteTarget(null);
+            showToast("일정을 삭제했어요.", "success");
+          } catch (error) {
+            showToast(getUserFacingErrorMessage(error, "일정 삭제에 실패했어요."), "error");
+          }
         }}
       />
     </AppShell>

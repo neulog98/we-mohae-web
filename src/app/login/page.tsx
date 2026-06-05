@@ -14,6 +14,7 @@ import { PasswordResetForm } from "@/components/auth/PasswordResetForm";
 import { ErrorView } from "@/components/common/StateView";
 import { useToast } from "@/components/common/Toast";
 import type { UserProfile } from "@/types/domain";
+import { getUserFacingErrorMessage } from "@/utils/errors";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -46,7 +47,7 @@ export default function LoginPage() {
         moveAfterLogin(profile);
       } catch (error) {
         if (!active) return;
-        const message = error instanceof Error ? error.message : "사용자 프로필 생성에 실패했어요.";
+        const message = getUserFacingErrorMessage(error, "사용자 프로필 생성에 실패했어요.");
         setLoading(false);
         routedUserId = null;
         setAuthError(message);

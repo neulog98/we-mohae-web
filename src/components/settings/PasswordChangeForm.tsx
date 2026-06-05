@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { KeyRound, X } from "lucide-react";
 import { changePassword, getAuthErrorMessage } from "@/features/auth/authService";
+import { getErrorCode } from "@/utils/errors";
 
 export function PasswordChangeForm({
   onSuccess,
@@ -30,10 +31,7 @@ export function PasswordChangeForm({
       await changePassword(currentPassword, newPassword);
       onSuccess();
     } catch (nextError) {
-      const code =
-        typeof nextError === "object" && nextError !== null && "code" in nextError && typeof nextError.code === "string"
-          ? nextError.code
-          : null;
+      const code = getErrorCode(nextError);
       setError(code === "auth/invalid-credential" ? "현재 비밀번호가 일치하지 않아요." : getAuthErrorMessage(nextError));
     } finally {
       setSaving(false);

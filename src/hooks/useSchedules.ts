@@ -5,6 +5,7 @@ import { addDays, endOfMonth, startOfMonth } from "date-fns";
 import { limit, onSnapshot, query } from "firebase/firestore";
 import { schedulesQuery, upcomingSchedulesQuery } from "@/features/schedule/scheduleService";
 import type { Schedule } from "@/types/domain";
+import { getUserFacingErrorMessage } from "@/utils/errors";
 
 export function useMonthSchedules(coupleId: string | null | undefined, monthDate: Date) {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -26,7 +27,7 @@ export function useMonthSchedules(coupleId: string | null | undefined, monthDate
         setLoading(false);
       },
       (nextError) => {
-        setError(nextError.message);
+        setError(getUserFacingErrorMessage(nextError, "일정을 불러오지 못했어요."));
         setLoading(false);
       }
     );
