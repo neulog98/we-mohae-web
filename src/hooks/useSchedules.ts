@@ -22,7 +22,7 @@ export function useMonthSchedules(coupleId: string | null | undefined, monthDate
     return onSnapshot(
       schedulesQuery(coupleId, start, end),
       (snapshot) => {
-        setSchedules(snapshot.docs.map((document) => document.data() as Schedule));
+        setSchedules(snapshot.docs.map((document) => toSchedule(document.id, document.data())));
         setLoading(false);
       },
       (nextError) => {
@@ -46,7 +46,7 @@ export function useUpcomingSchedules(coupleId: string | null | undefined, count 
     }
     setLoading(true);
     return onSnapshot(query(upcomingSchedulesQuery(coupleId), limit(count)), (snapshot) => {
-      setSchedules(snapshot.docs.map((document) => document.data() as Schedule));
+      setSchedules(snapshot.docs.map((document) => toSchedule(document.id, document.data())));
       setLoading(false);
     });
   }, [coupleId, count]);
@@ -64,9 +64,17 @@ export function useUpcomingWindowSchedules(coupleId: string | null | undefined, 
     }
     const now = new Date();
     return onSnapshot(schedulesQuery(coupleId, now, addDays(now, days)), (snapshot) => {
-      setSchedules(snapshot.docs.map((document) => document.data() as Schedule));
+      setSchedules(snapshot.docs.map((document) => toSchedule(document.id, document.data())));
     });
   }, [coupleId, days]);
 
   return schedules;
+}
+
+function toSchedule(documentId: string, data: unknown): Schedule {
+  const schedule = data as Schedule;
+  return {
+    ...schedule,
+    scheduleId: schedule.scheduleId ?? documentId
+  };
 }

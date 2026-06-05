@@ -16,7 +16,7 @@ export function useBudgets(coupleId: string | null | undefined) {
     }
     setLoading(true);
     return onSnapshot(budgetsQuery(coupleId), (snapshot) => {
-      setBudgets(snapshot.docs.map((document) => document.data() as BudgetItem));
+      setBudgets(snapshot.docs.map((document) => toBudgetItem(document.id, document.data())));
       setLoading(false);
     });
   }, [coupleId]);
@@ -60,4 +60,12 @@ export function getNextPaymentDate(item: BudgetItem) {
   now.setHours(0, 0, 0, 0);
   const upcoming = dates.filter((date) => date >= now).sort((left, right) => left.getTime() - right.getTime());
   return upcoming[0] ?? null;
+}
+
+function toBudgetItem(documentId: string, data: unknown): BudgetItem {
+  const item = data as BudgetItem;
+  return {
+    ...item,
+    budgetId: item.budgetId ?? documentId
+  };
 }
