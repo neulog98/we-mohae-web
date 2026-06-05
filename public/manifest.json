@@ -1,0 +1,21 @@
+{
+  "name": "우리뭐해",
+  "short_name": "우리뭐해",
+  "description": "우리 둘의 일정과 결혼 준비를 함께 관리하는 캘린더",
+  "start_url": "/home",
+  "display": "standalone",
+  "background_color": "#f7f7f4",
+  "theme_color": "#b75d69",
+  "icons": [
+    {
+      "src": "/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
