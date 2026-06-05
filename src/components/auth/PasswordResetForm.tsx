@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { MailCheck, X } from "lucide-react";
 import { getAuthErrorMessage, sendPasswordResetEmailToUser } from "@/features/auth/authService";
 
@@ -16,6 +16,11 @@ export function PasswordResetForm({
   const [email, setEmail] = useState(initialEmail);
   const [error, setError] = useState("");
   const [sending, setSending] = useState(false);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    emailInputRef.current?.focus();
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -31,11 +36,23 @@ export function PasswordResetForm({
     }
   }
 
+  function handleDialogKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape") {
+      onCancel();
+    }
+  }
+
   return (
-    <div className="fixed inset-0 z-40 overflow-y-auto bg-cloud">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="password-reset-title"
+      onKeyDown={handleDialogKeyDown}
+      className="fixed inset-0 z-40 overflow-y-auto bg-cloud"
+    >
       <form onSubmit={handleSubmit} className="mx-auto min-h-screen w-full max-w-md pb-28">
         <header className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-200 bg-white px-5 py-4">
-          <h2 className="text-lg font-bold text-ink">비밀번호 재설정</h2>
+          <h2 id="password-reset-title" className="text-lg font-bold text-ink">비밀번호 재설정</h2>
           <button type="button" aria-label="비밀번호 재설정 닫기" onClick={onCancel} className="rounded-md bg-neutral-100 p-2 text-neutral-600">
             <X size={19} />
           </button>
@@ -49,6 +66,7 @@ export function PasswordResetForm({
           <label className="block text-sm font-semibold text-neutral-700">
             가입 이메일
             <input
+              ref={emailInputRef}
               required
               type="email"
               value={email}

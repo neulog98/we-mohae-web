@@ -48,7 +48,7 @@ function HomeContent({ profile }: { profile: UserProfile }) {
         <div>
           <div className="mb-3 flex items-center justify-between">
             <h3 className="font-semibold text-ink">다가오는 일정이에요</h3>
-            <Link href="/calendar" className="text-sm font-medium text-rosewood">전체보기</Link>
+            <Link href="/calendar" className="flex min-h-11 items-center text-sm font-medium text-rosewood">전체보기</Link>
           </div>
           <SchedulePreviewList schedules={schedules} loading={loading} />
         </div>

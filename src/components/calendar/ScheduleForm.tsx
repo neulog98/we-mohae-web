@@ -63,19 +63,25 @@ export function ScheduleForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-3 rounded-lg bg-white p-5 shadow-soft">
       <h3 className="font-semibold text-ink">{submitLabel}</h3>
-      <input
-        required
-        value={title}
-        onChange={(event) => setTitle(event.target.value)}
-        className="w-full rounded-md border border-neutral-200 px-3 py-3 outline-none focus:border-rosewood"
-        placeholder="일정 제목"
-      />
-      <textarea
-        value={description}
-        onChange={(event) => setDescription(event.target.value)}
-        className="min-h-20 w-full rounded-md border border-neutral-200 px-3 py-3 outline-none focus:border-rosewood"
-        placeholder="설명"
-      />
+      <label className="block text-sm font-medium text-neutral-700">
+        일정 제목
+        <input
+          required
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+          className="mt-2 w-full rounded-md border border-neutral-200 px-3 py-3 outline-none focus:border-rosewood"
+          placeholder="일정 제목"
+        />
+      </label>
+      <label className="block text-sm font-medium text-neutral-700">
+        설명
+        <textarea
+          value={description}
+          onChange={(event) => setDescription(event.target.value)}
+          className="mt-2 min-h-20 w-full rounded-md border border-neutral-200 px-3 py-3 outline-none focus:border-rosewood"
+          placeholder="설명"
+        />
+      </label>
       <label className="block text-sm font-medium text-neutral-700">
         시작일
         <input type="datetime-local" value={startAt} onChange={(event) => setStartAt(event.target.value)} className="mt-2 w-full rounded-md border border-neutral-200 px-3 py-3" />
@@ -88,11 +94,14 @@ export function ScheduleForm({
         <input type="checkbox" checked={allDay} onChange={(event) => setAllDay(event.target.checked)} />
         종일 일정
       </label>
-      <select value={category} onChange={(event) => setCategory(event.target.value as ScheduleCategory)} className="w-full rounded-md border border-neutral-200 px-3 py-3">
-        {categories.map((nextCategory) => (
-          <option key={nextCategory} value={nextCategory}>{nextCategory}</option>
-        ))}
-      </select>
+      <label className="block text-sm font-medium text-neutral-700">
+        카테고리
+        <select value={category} onChange={(event) => setCategory(event.target.value as ScheduleCategory)} className="mt-2 w-full rounded-md border border-neutral-200 px-3 py-3">
+          {categories.map((nextCategory) => (
+            <option key={nextCategory} value={nextCategory}>{nextCategory}</option>
+          ))}
+        </select>
+      </label>
       <label className="flex items-center gap-2 text-sm text-neutral-700">
         <input type="checkbox" checked={reminderEnabled} onChange={(event) => setReminderEnabled(event.target.checked)} />
         하루 전·당일 오전 9시에 일정 알림 받기

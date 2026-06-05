@@ -110,10 +110,10 @@ function CalendarContent({ profile }: { profile: UserProfile }) {
                         {schedule.description && <p className="mt-2 text-sm leading-6 text-neutral-600">{schedule.description}</p>}
                       </div>
                       <div className="flex shrink-0 gap-1">
-                        <button aria-label="일정 수정" onClick={() => setEditing(schedule)} className="rounded-md bg-neutral-100 p-2">
+                        <button aria-label="일정 수정" onClick={() => setEditing(schedule)} className="flex min-h-11 min-w-11 items-center justify-center rounded-md bg-neutral-100 p-2">
                           <Edit size={16} />
                         </button>
-                        <button aria-label="일정 삭제" onClick={() => setDeleteTarget(schedule)} className="rounded-md bg-red-50 p-2 text-red-600">
+                        <button aria-label="일정 삭제" onClick={() => setDeleteTarget(schedule)} className="flex min-h-11 min-w-11 items-center justify-center rounded-md bg-red-50 p-2 text-red-600">
                           <Trash2 size={16} />
                         </button>
                       </div>

@@ -25,6 +25,7 @@ export function AuthGate({
   const { user, profile, loading, error } = authContext;
   const router = useRouter();
   const pathname = usePathname();
+  const normalizedPathname = pathname.replace(/\/$/, "") || "/";
 
   useEffect(() => {
     if (loading) return;
@@ -36,10 +37,10 @@ export function AuthGate({
       router.replace("/onboarding");
       return;
     }
-    if (!requireOnboarding && hasCompletedOnboarding(profile) && pathname === "/onboarding") {
+    if (!requireOnboarding && hasCompletedOnboarding(profile) && normalizedPathname === "/onboarding") {
       router.replace("/home");
     }
-  }, [loading, pathname, profile, requireOnboarding, router, user]);
+  }, [loading, normalizedPathname, profile, requireOnboarding, router, user]);
 
   if (loading || !user) {
     return (

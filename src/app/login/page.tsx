@@ -98,6 +98,7 @@ export default function LoginPage() {
             <input
               value={displayName}
               onChange={(event) => setDisplayName(event.target.value)}
+              autoComplete="name"
               className="mt-2 w-full rounded-md border border-neutral-200 px-3 py-3 outline-none focus:border-rosewood"
               placeholder="표시할 이름"
             />
@@ -110,6 +111,7 @@ export default function LoginPage() {
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
+            autoComplete="email"
             className="mt-2 w-full rounded-md border border-neutral-200 px-3 py-3 outline-none focus:border-rosewood"
             placeholder="you@example.com"
           />
@@ -122,6 +124,7 @@ export default function LoginPage() {
             minLength={6}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
+            autoComplete={isSignUp ? "new-password" : "current-password"}
             className="mt-2 w-full rounded-md border border-neutral-200 px-3 py-3 outline-none focus:border-rosewood"
             placeholder="6자 이상"
           />
@@ -130,7 +133,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => setPasswordResetOpen(true)}
-            className="ml-auto block py-1 text-sm font-medium text-rosewood"
+            className="ml-auto block min-h-11 py-2 text-sm font-medium text-rosewood"
           >
             비밀번호를 잊으셨나요?
           </button>
@@ -138,7 +141,7 @@ export default function LoginPage() {
         <button disabled={loading} className="w-full rounded-md bg-rosewood py-3 text-sm font-semibold text-white disabled:opacity-60">
           {isSignUp ? "회원가입" : "로그인"}
         </button>
-        <button type="button" onClick={() => setIsSignUp((current) => !current)} className="w-full py-2 text-sm text-neutral-500">
+        <button type="button" onClick={() => setIsSignUp((current) => !current)} className="min-h-11 w-full py-2 text-sm text-neutral-500">
           {isSignUp ? "이미 계정이 있어요" : "처음이에요. 계정 만들기"}
         </button>
       </form>

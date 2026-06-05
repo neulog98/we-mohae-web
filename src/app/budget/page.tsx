@@ -122,11 +122,11 @@ function BudgetContent({ profile }: { profile: UserProfile }) {
                           setEditing(item);
                           setFormOpen(true);
                         }}
-                        className="rounded-md bg-neutral-100 p-2"
+                        className="flex min-h-11 min-w-11 items-center justify-center rounded-md bg-neutral-100 p-2"
                       >
                         <Edit size={16} />
                       </button>
-                      <button aria-label="예산 삭제" onClick={() => setDeleteTarget(item)} className="rounded-md bg-red-50 p-2 text-red-600">
+                      <button aria-label="예산 삭제" onClick={() => setDeleteTarget(item)} className="flex min-h-11 min-w-11 items-center justify-center rounded-md bg-red-50 p-2 text-red-600">
                         <Trash2 size={16} />
                       </button>
                     </div>

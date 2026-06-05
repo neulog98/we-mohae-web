@@ -135,7 +135,7 @@ function SettingsContent({ profile }: { profile: UserProfile }) {
               <p className="mt-2 text-sm text-neutral-500">아직 파트너가 연결되지 않았어요.</p>
               <div className="mt-4 flex items-center justify-between rounded-md bg-cloud px-4 py-3">
                 <span className="text-lg font-bold tracking-[0.18em]">{couple?.inviteCode ?? "--------"}</span>
-                <button aria-label="초대코드 복사" onClick={handleCopyCode} className="rounded-md bg-white p-2 text-ink">
+                <button aria-label="초대코드 복사" onClick={handleCopyCode} className="flex min-h-11 min-w-11 items-center justify-center rounded-md bg-white p-2 text-ink">
                   <Copy size={18} />
                 </button>
               </div>
