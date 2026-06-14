@@ -26,7 +26,7 @@ export function AppShell({
   const visibleTabs = tabs.filter((tab) => !tab.weddingOnly || mode === "wedding");
 
   return (
-    <div className="mx-auto min-h-screen w-full max-w-md pb-24">
+    <div className="mx-auto min-h-screen w-full max-w-md pb-24 md:max-w-6xl">
       <header className="sticky top-0 z-20 border-b border-white/70 bg-cloud/90 px-5 py-4 backdrop-blur">
         <p className="text-xs font-medium text-rosewood">{mode === "wedding" ? "예비부부 모드" : "커플 모드"}</p>
         <h1 className="mt-1 text-xl font-bold text-ink">{title ?? "우리뭐해"}</h1>

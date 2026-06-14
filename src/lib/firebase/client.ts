@@ -1,8 +1,8 @@
 "use client";
 
 import { getApps, initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { connectAuthEmulator, getAuth } from "firebase/auth";
+import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
 import { getMessaging, isSupported } from "firebase/messaging";
 
 export const isFirebaseConfigured = Boolean(
@@ -25,6 +25,22 @@ const firebaseConfig = {
 export const firebaseApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 export const auth = getAuth(firebaseApp);
 export const db = getFirestore(firebaseApp);
+
+declare global {
+  interface Window {
+    __WE_MOHAE_FIREBASE_EMULATOR_CONNECTED__?: boolean;
+  }
+}
+
+if (
+  typeof window !== "undefined" &&
+  process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true" &&
+  !window.__WE_MOHAE_FIREBASE_EMULATOR_CONNECTED__
+) {
+  connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+  connectFirestoreEmulator(db, "127.0.0.1", 8080);
+  window.__WE_MOHAE_FIREBASE_EMULATOR_CONNECTED__ = true;
+}
 
 export async function getFirebaseMessaging() {
   if (typeof window === "undefined") return null;

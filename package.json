@@ -12,7 +12,11 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "rules:test": "firebase emulators:exec --only firestore \"npm run rules:test:unit\"",
-    "rules:test:unit": "vitest run tests/rules"
+    "rules:test:unit": "vitest run tests/rules",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:full:headed": "FIREBASE_CLI_DISABLE_UPDATE_CHECK=true XDG_CONFIG_HOME=/private/tmp/firebase-config PLAYWRIGHT_PORT=3100 E2E_USE_FIREBASE_EMULATOR=true NEXT_PUBLIC_USE_FIREBASE_EMULATOR=true NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyDUMMYKEYFORLOCALTESTS123456789 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=we-mohae.firebaseapp.com NEXT_PUBLIC_FIREBASE_PROJECT_ID=we-mohae NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=000000000000 NEXT_PUBLIC_FIREBASE_APP_ID=1:000000000000:web:localtest firebase emulators:exec --only auth,firestore \"playwright test --headed\"",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "date-fns": "^3.6.0",
@@ -24,6 +28,8 @@
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^3.0.4",
+    "@playwright/mcp": "^0.0.76",
+    "@playwright/test": "^1.60.0",
     "@types/node": "^20.17.6",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
@@ -35,5 +41,8 @@
     "tailwindcss": "^3.4.14",
     "typescript": "^5.6.3",
     "vitest": "^2.1.4"
+  },
+  "overrides": {
+    "universal-analytics": "0.5.3"
   }
 }

@@ -56,13 +56,24 @@ export function BudgetForm({
   const [memo, setMemo] = useState(item?.memo ?? "");
   const [relatedScheduleId, setRelatedScheduleId] = useState(item?.relatedScheduleId ?? "");
   const [saving, setSaving] = useState(false);
+  const [validationError, setValidationError] = useState("");
   const estimatedAmountNumber = Number(estimatedAmount) || 0;
+  const contractAmountNumber = Number(contractAmount) || 0;
   const paidAmountNumber = Number(paidAmount) || 0;
   const remainingAmount = estimatedAmountNumber - paidAmountNumber;
   const isOverBudget = remainingAmount < 0;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setValidationError("");
+    if (contractAmountNumber > paidAmountNumber) {
+      setValidationError("계약금은 현재까지 결제 금액보다 클 수 없어요.");
+      return;
+    }
+    if (contractPaymentDate && balancePaymentDate && new Date(`${contractPaymentDate}T00:00:00`) > new Date(`${balancePaymentDate}T00:00:00`)) {
+      setValidationError("잔금 결제일은 계약금 결제일보다 빠를 수 없어요.");
+      return;
+    }
     setSaving(true);
     try {
       await onSubmit({
@@ -70,7 +81,7 @@ export function BudgetForm({
         category,
         subCategory,
         estimatedAmount: estimatedAmountNumber,
-        contractAmount: Number(contractAmount) || 0,
+        contractAmount: contractAmountNumber,
         paidAmount: paidAmountNumber,
         payer,
         contractPaymentDate: contractPaymentDate ? new Date(`${contractPaymentDate}T00:00:00`) : null,
@@ -171,6 +182,11 @@ export function BudgetForm({
                 </p>
               )}
             </div>
+            {validationError && (
+              <p className="rounded-md bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
+                {validationError}
+              </p>
+            )}
           </FormSection>
 
           <FormSection title="결제 정보">
