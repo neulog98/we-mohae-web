@@ -6,11 +6,14 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDocs,
   serverTimestamp,
-  updateDoc
+  updateDoc,
+  writeBatch
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
 import type { BudgetCategory, BudgetItem, PayerType } from "@/types/domain";
+import { weddingBudgetTemplate } from "./budgetTemplates";
 
 export interface BudgetInput {
   title: string;
@@ -19,10 +22,18 @@ export interface BudgetInput {
   estimatedAmount: number;
   contractAmount: number;
   paidAmount: number;
+  groomShareAmount: number | null;
+  brideShareAmount: number | null;
   payer: PayerType;
   contractPaymentDate: Date | null;
   balancePaymentDate: Date | null;
   memo: string;
+  vendorName: string;
+  vendorContact: string;
+  accountInfo: string;
+  familySupportAmount: number;
+  refundAmount: number;
+  cardHolder: string;
   relatedScheduleId: string | null;
 }
 
@@ -63,6 +74,45 @@ export async function deleteBudgetItem(coupleId: string, budgetId: string) {
   await deleteDoc(doc(db, "couples", coupleId, "budgets", budgetId));
 }
 
+export async function createBudgetItemsFromTemplate(coupleId: string, uid: string) {
+  const existing = await getDocs(collection(db, "couples", coupleId, "budgets"));
+  if (!existing.empty) return 0;
+
+  const batch = writeBatch(db);
+  weddingBudgetTemplate.forEach((item) => {
+    const ref = doc(collection(db, "couples", coupleId, "budgets"));
+    batch.set(ref, {
+      budgetId: ref.id,
+      title: item.title,
+      category: item.category,
+      subCategory: item.subCategory,
+      estimatedAmount: item.estimatedAmount,
+      contractAmount: 0,
+      paidAmount: 0,
+      groomShareAmount: item.payer === "shared" ? 0 : null,
+      brideShareAmount: item.payer === "shared" ? 0 : null,
+      payer: item.payer,
+      contractPaymentDate: null,
+      balancePaymentDate: null,
+      paymentDate: null,
+      memo: "",
+      vendorName: "",
+      vendorContact: "",
+      accountInfo: "",
+      familySupportAmount: 0,
+      refundAmount: 0,
+      cardHolder: "",
+      relatedScheduleId: null,
+      createdBy: uid,
+      updatedBy: uid,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+  });
+  await batch.commit();
+  return weddingBudgetTemplate.length;
+}
+
 export function summarizeBudgets(items: BudgetItem[]) {
   return items.reduce(
     (summary, item) => {
@@ -71,7 +121,13 @@ export function summarizeBudgets(items: BudgetItem[]) {
       summary.paidAmount += item.paidAmount;
       if (item.payer === "groom") summary.groomPaidAmount += item.paidAmount;
       if (item.payer === "bride") summary.bridePaidAmount += item.paidAmount;
-      if (item.payer === "shared") summary.sharedPaidAmount += item.paidAmount;
+      if (item.payer === "shared") {
+        summary.sharedPaidAmount += item.paidAmount;
+        summary.groomPaidAmount += item.groomShareAmount ?? 0;
+        summary.bridePaidAmount += item.brideShareAmount ?? 0;
+      }
+      summary.familySupportAmount += item.familySupportAmount ?? 0;
+      summary.refundAmount += item.refundAmount ?? 0;
       return summary;
     },
     {
@@ -81,7 +137,9 @@ export function summarizeBudgets(items: BudgetItem[]) {
       remainingAmount: 0,
       groomPaidAmount: 0,
       bridePaidAmount: 0,
-      sharedPaidAmount: 0
+      sharedPaidAmount: 0,
+      familySupportAmount: 0,
+      refundAmount: 0
     }
   );
 }

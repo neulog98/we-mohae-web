@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { KeyRound, X } from "lucide-react";
 import { changePassword, getAuthErrorMessage } from "@/features/auth/authService";
+import { useLockBodyScroll } from "@/hooks/useLockBodyScroll";
 import { getErrorCode } from "@/utils/errors";
 
 export function PasswordChangeForm({
@@ -12,6 +13,8 @@ export function PasswordChangeForm({
   onSuccess: () => void;
   onCancel: () => void;
 }) {
+  useLockBodyScroll();
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -39,9 +42,9 @@ export function PasswordChangeForm({
   }
 
   return (
-    <div role="dialog" aria-modal="true" aria-labelledby="password-change-title" className="fixed inset-0 z-40 overflow-y-auto bg-cloud">
-      <form onSubmit={handleSubmit} className="mx-auto min-h-screen w-full max-w-md pb-28">
-        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-200 bg-white px-5 py-4">
+    <div role="dialog" aria-modal="true" aria-labelledby="password-change-title" className="fixed inset-0 z-40 overflow-hidden bg-cloud md:flex md:items-center md:justify-center md:bg-black/40 md:p-6">
+      <form onSubmit={handleSubmit} className="mx-auto h-screen w-full max-w-md overflow-y-auto pb-28 md:h-auto md:max-h-[calc(100vh-3rem)] md:max-w-xl md:rounded-lg md:bg-cloud md:pb-0 md:shadow-soft">
+        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-200 bg-white px-5 py-4 md:rounded-t-lg">
           <h2 id="password-change-title" className="text-lg font-bold text-ink">비밀번호 변경</h2>
           <button type="button" aria-label="비밀번호 변경 닫기" onClick={onCancel} className="flex min-h-11 min-w-11 items-center justify-center rounded-md bg-neutral-100 p-2 text-neutral-600">
             <X size={19} />
@@ -59,7 +62,7 @@ export function PasswordChangeForm({
           {error && <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
         </div>
 
-        <div className="fixed bottom-0 left-1/2 z-20 grid w-full max-w-md -translate-x-1/2 grid-cols-2 gap-2 border-t border-neutral-200 bg-white px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3">
+        <div className="fixed bottom-0 left-1/2 z-20 grid w-full max-w-md -translate-x-1/2 grid-cols-2 gap-2 border-t border-neutral-200 bg-white px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 md:sticky md:left-auto md:max-w-none md:translate-x-0 md:rounded-b-lg md:pb-4">
           <button type="button" onClick={onCancel} className="rounded-md border border-neutral-200 py-3 text-sm font-semibold text-ink">
             취소
           </button>

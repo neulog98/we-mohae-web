@@ -3,6 +3,7 @@
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { MailCheck, X } from "lucide-react";
 import { getAuthErrorMessage, sendPasswordResetEmailToUser } from "@/features/auth/authService";
+import { useLockBodyScroll } from "@/hooks/useLockBodyScroll";
 
 export function PasswordResetForm({
   initialEmail,
@@ -13,6 +14,8 @@ export function PasswordResetForm({
   onSent: (email: string) => void;
   onCancel: () => void;
 }) {
+  useLockBodyScroll();
+
   const [email, setEmail] = useState(initialEmail);
   const [error, setError] = useState("");
   const [sending, setSending] = useState(false);
@@ -48,10 +51,10 @@ export function PasswordResetForm({
       aria-modal="true"
       aria-labelledby="password-reset-title"
       onKeyDown={handleDialogKeyDown}
-      className="fixed inset-0 z-40 overflow-y-auto bg-cloud"
+      className="fixed inset-0 z-40 overflow-hidden bg-cloud md:flex md:items-center md:justify-center md:bg-black/40 md:p-6"
     >
-      <form onSubmit={handleSubmit} className="mx-auto min-h-screen w-full max-w-md pb-28">
-        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-200 bg-white px-5 py-4">
+      <form onSubmit={handleSubmit} className="mx-auto h-screen w-full max-w-md overflow-y-auto pb-28 md:h-auto md:max-h-[calc(100vh-3rem)] md:max-w-xl md:rounded-lg md:bg-cloud md:pb-0 md:shadow-soft">
+        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-200 bg-white px-5 py-4 md:rounded-t-lg">
           <h2 id="password-reset-title" className="text-lg font-bold text-ink">비밀번호 재설정</h2>
           <button type="button" aria-label="비밀번호 재설정 닫기" onClick={onCancel} className="rounded-md bg-neutral-100 p-2 text-neutral-600">
             <X size={19} />
@@ -80,7 +83,7 @@ export function PasswordResetForm({
           <p className="text-xs leading-5 text-neutral-500">메일이 보이지 않으면 스팸 메일함도 확인해주세요.</p>
         </div>
 
-        <div className="fixed bottom-0 left-1/2 z-20 grid w-full max-w-md -translate-x-1/2 grid-cols-2 gap-2 border-t border-neutral-200 bg-white px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3">
+        <div className="fixed bottom-0 left-1/2 z-20 grid w-full max-w-md -translate-x-1/2 grid-cols-2 gap-2 border-t border-neutral-200 bg-white px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 md:sticky md:left-auto md:max-w-none md:translate-x-0 md:rounded-b-lg md:pb-4">
           <button type="button" onClick={onCancel} className="rounded-md border border-neutral-200 py-3 text-sm font-semibold text-ink">
             취소
           </button>

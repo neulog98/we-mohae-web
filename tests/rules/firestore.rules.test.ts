@@ -127,4 +127,50 @@ describe.sequential("firestore security rules", () => {
 
     await assertFails(setDoc(doc(alice, "couples/coupleA/budgets/budgetA"), { title: "웨딩홀" }));
   });
+
+  it("allows checklist only for wedding mode members", async () => {
+    const weddingAlice = testEnv.authenticatedContext("checklistWeddingAlice").firestore();
+    const coupleAlice = testEnv.authenticatedContext("checklistCoupleAlice").firestore();
+
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const firestore = context.firestore();
+      await setDoc(doc(firestore, "couples/checklistWedding"), {
+        coupleId: "checklistWedding",
+        mode: "wedding",
+        memberIds: ["checklistWeddingAlice"]
+      });
+      await setDoc(doc(firestore, "couples/checklistCouple"), {
+        coupleId: "checklistCouple",
+        mode: "couple",
+        memberIds: ["checklistCoupleAlice"]
+      });
+    });
+
+    await assertSucceeds(setDoc(doc(weddingAlice, "couples/checklistWedding/checklist/itemA"), { title: "웨딩홀 후보 비교" }));
+    await assertFails(setDoc(doc(coupleAlice, "couples/checklistCouple/checklist/itemA"), { title: "웨딩홀 후보 비교" }));
+  });
+
+  it("allows guest and vendor management only for wedding mode members", async () => {
+    const weddingAlice = testEnv.authenticatedContext("opsWeddingAlice").firestore();
+    const coupleAlice = testEnv.authenticatedContext("opsCoupleAlice").firestore();
+
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const firestore = context.firestore();
+      await setDoc(doc(firestore, "couples/opsWedding"), {
+        coupleId: "opsWedding",
+        mode: "wedding",
+        memberIds: ["opsWeddingAlice"]
+      });
+      await setDoc(doc(firestore, "couples/opsCouple"), {
+        coupleId: "opsCouple",
+        mode: "couple",
+        memberIds: ["opsCoupleAlice"]
+      });
+    });
+
+    await assertSucceeds(setDoc(doc(weddingAlice, "couples/opsWedding/guests/guestA"), { name: "하객" }));
+    await assertSucceeds(setDoc(doc(weddingAlice, "couples/opsWedding/vendors/vendorA"), { name: "업체" }));
+    await assertFails(setDoc(doc(coupleAlice, "couples/opsCouple/guests/guestA"), { name: "하객" }));
+    await assertFails(setDoc(doc(coupleAlice, "couples/opsCouple/vendors/vendorA"), { name: "업체" }));
+  });
 });

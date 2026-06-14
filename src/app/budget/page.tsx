@@ -10,7 +10,7 @@ import { EmptyView, LoadingView } from "@/components/common/StateView";
 import { useToast } from "@/components/common/Toast";
 import { AppShell } from "@/components/layout/AppShell";
 import { AuthGate } from "@/components/layout/AuthGate";
-import { addBudgetItem, deleteBudgetItem, updateBudgetItem } from "@/features/budget/budgetService";
+import { addBudgetItem, createBudgetItemsFromTemplate, deleteBudgetItem, updateBudgetItem } from "@/features/budget/budgetService";
 import { filterBudgets, getNextPaymentDate, sortBudgets, useBudgets, type BudgetSort } from "@/hooks/useBudgets";
 import { useCouple } from "@/hooks/useCouple";
 import { useUpcomingWindowSchedules } from "@/hooks/useSchedules";
@@ -42,7 +42,7 @@ function BudgetContent({ profile }: { profile: UserProfile }) {
   const [editing, setEditing] = useState<BudgetItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<BudgetItem | null>(null);
   const [formOpen, setFormOpen] = useState(false);
-  const { mode } = useCouple(profile);
+  const { couple, mode } = useCouple(profile);
   const { budgets, summary, loading } = useBudgets(mode === "wedding" ? profile.coupleId : null);
   const schedules = useUpcomingWindowSchedules(profile.coupleId, 365).filter((schedule) => schedule.type === "wedding");
   const visibleBudgets = useMemo(
@@ -78,6 +78,7 @@ function BudgetContent({ profile }: { profile: UserProfile }) {
     <AppShell mode="wedding" title="예산관리">
       <section className="space-y-5">
         <BudgetSummary summary={summary} />
+        <BudgetReport summary={summary} budgetGoalAmount={couple?.budgetGoalAmount ?? 0} itemCount={budgets.length} />
 
         <div className="rounded-lg bg-white p-4 shadow-soft">
           <div className="relative">
@@ -158,17 +159,36 @@ function BudgetContent({ profile }: { profile: UserProfile }) {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            setEditing(null);
-            setFormOpen(true);
-          }}
-          className="flex w-full items-center justify-center gap-2 rounded-md bg-rosewood py-3 text-sm font-semibold text-white"
-        >
-          <Plus size={18} />
-          예산 항목 추가
-        </button>
+        <div className="grid gap-2 md:grid-cols-2">
+          {budgets.length === 0 && (
+            <button
+              type="button"
+              onClick={async () => {
+                if (!profile.coupleId) return;
+                try {
+                  const count = await createBudgetItemsFromTemplate(profile.coupleId, profile.uid);
+                  showToast(count > 0 ? "예산 템플릿을 불러왔어요." : "이미 예산 항목이 있어요.", "success");
+                } catch (error) {
+                  showToast(getUserFacingErrorMessage(error, "예산 템플릿을 불러오지 못했어요."), "error");
+                }
+              }}
+              className="flex w-full items-center justify-center gap-2 rounded-md border border-rosewood bg-white py-3 text-sm font-semibold text-rosewood"
+            >
+              예산 템플릿 불러오기
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              setEditing(null);
+              setFormOpen(true);
+            }}
+            className="flex w-full items-center justify-center gap-2 rounded-md bg-rosewood py-3 text-sm font-semibold text-white"
+          >
+            <Plus size={18} />
+            예산 항목 추가
+          </button>
+        </div>
 
         <div>
           <h2 className="mb-3 font-semibold text-ink">예산 항목</h2>
@@ -199,6 +219,8 @@ function BudgetContent({ profile }: { profile: UserProfile }) {
                               <span className="text-neutral-500">예상 <strong className="text-ink">{formatCurrency(item.estimatedAmount)}</strong></span>
                               <span className="text-neutral-500">결제 <strong className="text-rosewood">{formatCurrency(item.paidAmount)}</strong></span>
                             </div>
+                            <BudgetShareText item={item} />
+                            <BudgetVendorText item={item} />
                           </div>
                           <div className="flex shrink-0 gap-1">
                             <button
@@ -315,15 +337,19 @@ function BudgetTable({
                 <td className="max-w-[220px] px-4 py-3">
                   <p className="truncate font-semibold text-ink">{item.title}</p>
                   {item.memo && <p className="mt-1 line-clamp-2 text-xs text-neutral-500">{item.memo}</p>}
+                  <BudgetVendorText item={item} />
                 </td>
                 <td className="px-4 py-3 text-neutral-600">{item.category}{item.subCategory ? ` · ${item.subCategory}` : ""}</td>
-                <td className="px-4 py-3 text-neutral-600">{payerLabel(item.payer)}</td>
+                <td className="px-4 py-3 text-neutral-600">
+                  <span>{payerLabel(item.payer)}</span>
+                  <BudgetShareText item={item} />
+                </td>
                 <td className="px-4 py-3 text-right tabular-nums text-neutral-700">{formatCurrency(item.estimatedAmount)}</td>
-                <td className="px-4 py-3 text-right tabular-nums font-semibold text-rosewood">{formatCurrency(item.paidAmount)}</td>
+	                <td className="px-4 py-3 text-right tabular-nums font-semibold text-rosewood">{formatCurrency(item.paidAmount)}</td>
                 <td className={`px-4 py-3 text-right tabular-nums font-semibold ${isOverBudget ? "text-red-600" : "text-ink"}`}>
                   {formatCurrency(Math.abs(remainingAmount))}
                 </td>
-                <td className="px-4 py-3 text-neutral-600">{nextPaymentDate ? formatKoreanDate(nextPaymentDate) : "미정"}</td>
+	                <td className="px-4 py-3 text-neutral-600">{nextPaymentDate ? formatKoreanDate(nextPaymentDate) : "미정"}</td>
                 <td className="px-4 py-3">
                   <BudgetStatusBadge item={item} />
                 </td>
@@ -342,6 +368,83 @@ function BudgetTable({
           })}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function BudgetShareText({ item }: { item: BudgetItem }) {
+  if (item.payer !== "shared") return null;
+  if ((item.groomShareAmount ?? 0) === 0 && (item.brideShareAmount ?? 0) === 0) return null;
+
+  return (
+    <p className="mt-2 text-xs text-neutral-500">
+      신랑 {formatCurrency(item.groomShareAmount ?? 0)} · 신부 {formatCurrency(item.brideShareAmount ?? 0)}
+    </p>
+  );
+}
+
+function BudgetVendorText({ item }: { item: BudgetItem }) {
+  if (!item.vendorName && !item.vendorContact && !item.accountInfo && !item.cardHolder) return null;
+
+  return (
+    <p className="mt-2 line-clamp-2 text-xs text-neutral-500">
+      {[item.vendorName, item.vendorContact, item.accountInfo, item.cardHolder].filter(Boolean).join(" · ")}
+    </p>
+  );
+}
+
+function BudgetReport({
+  summary,
+  budgetGoalAmount,
+  itemCount
+}: {
+  summary: ReturnType<typeof useBudgets>["summary"];
+  budgetGoalAmount: number;
+  itemCount: number;
+}) {
+  const targetAmount = budgetGoalAmount || summary.estimatedAmount;
+  const overTargetAmount = Math.max(summary.estimatedAmount - targetAmount, 0);
+  const paidRate = targetAmount > 0 ? Math.min(Math.round((summary.paidAmount / targetAmount) * 100), 999) : 0;
+  const remainingToPay = Math.max(summary.estimatedAmount - summary.paidAmount, 0);
+  const netPaidAmount = Math.max(summary.paidAmount - summary.familySupportAmount - summary.refundAmount, 0);
+
+  return (
+    <section className="rounded-lg bg-white p-4 shadow-soft">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="font-semibold text-ink">예산 리포트</h2>
+          <p className="mt-1 text-sm text-neutral-500">{itemCount}개 항목 기준으로 정산 현황을 계산했어요.</p>
+        </div>
+        <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-600">
+          목표 대비 {paidRate}%
+        </span>
+      </div>
+      <div className="mt-4 h-2 overflow-hidden rounded-full bg-neutral-100">
+        <div className="h-full rounded-full bg-rosewood" style={{ width: `${Math.min(paidRate, 100)}%` }} />
+      </div>
+      <div className="mt-4 grid gap-2 md:grid-cols-4">
+        <ReportMetric label="목표 예산" value={targetAmount ? formatCurrency(targetAmount) : "미설정"} />
+        <ReportMetric label="앞으로 결제" value={formatCurrency(remainingToPay)} />
+        <ReportMetric label="신랑 부담" value={formatCurrency(summary.groomPaidAmount)} />
+        <ReportMetric label="신부 부담" value={formatCurrency(summary.bridePaidAmount)} />
+        <ReportMetric label="실제 부담" value={formatCurrency(netPaidAmount)} />
+        <ReportMetric label="가족 지원" value={formatCurrency(summary.familySupportAmount)} />
+        <ReportMetric label="환급/취소" value={formatCurrency(summary.refundAmount)} />
+      </div>
+      {overTargetAmount > 0 && (
+        <p className="mt-3 rounded-md bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
+          목표 예산보다 {formatCurrency(overTargetAmount)} 높게 계획되어 있어요.
+        </p>
+      )}
+    </section>
+  );
+}
+
+function ReportMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md bg-cloud px-3 py-3">
+      <p className="text-xs font-semibold text-neutral-500">{label}</p>
+      <p className="mt-1 truncate text-sm font-bold text-ink">{value}</p>
     </div>
   );
 }
@@ -380,6 +483,10 @@ function filterBudgetItems(
       item.category,
       item.subCategory,
       item.memo,
+      item.vendorName,
+      item.vendorContact,
+      item.accountInfo,
+      item.cardHolder,
       payerLabel(item.payer)
     ]
       .filter(Boolean)

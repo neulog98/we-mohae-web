@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
+import { AnalyticsTracker } from "@/components/analytics/AnalyticsTracker";
 import { ToastProvider } from "@/components/common/Toast";
 
 export const metadata: Metadata = {
@@ -28,7 +29,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko">
       <body>
-        <ToastProvider>{children}</ToastProvider>
+        <ToastProvider>
+          <AnalyticsTracker />
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );

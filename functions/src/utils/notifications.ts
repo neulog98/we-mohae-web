@@ -37,7 +37,7 @@ export async function sendOnce({
 }: {
   coupleId: string;
   id: string;
-  targetType: "schedule" | "budget";
+  targetType: "schedule" | "budget" | "checklist";
   targetId: string;
   notificationType: string;
   sentToUserIds: string[];

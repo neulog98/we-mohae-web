@@ -23,7 +23,7 @@ export function MonthCalendar({
   const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
 
   return (
-    <div className="rounded-lg bg-white p-4 shadow-soft">
+    <div aria-label="월간 캘린더" className="rounded-lg bg-white p-4 shadow-soft">
       <div className="mb-4 flex items-center justify-between">
         <button aria-label="이전 달" onClick={() => onMonthChange(addMonths(monthDate, -1))} className="flex min-h-11 min-w-11 items-center justify-center rounded-md bg-neutral-100 p-2">
           <ChevronLeft size={18} />
@@ -43,9 +43,10 @@ export function MonthCalendar({
           const hasSchedule = schedules.some((schedule) => isSameDay(schedule.startAt.toDate(), day));
           const selected = month.isSelected(day, selectedDate);
           return (
-            <button
-              key={day.toISOString()}
-              onClick={() => onSelectDate(day)}
+	            <button
+	              key={day.toISOString()}
+	              aria-label={`${format(day, "yyyy-MM-dd")} 날짜 선택`}
+	              onClick={() => onSelectDate(day)}
               className={`relative flex aspect-square flex-col items-center justify-center rounded-md text-sm ${
                 selected
                   ? "bg-rosewood text-white"

@@ -74,6 +74,18 @@ service cloud.firestore {
         allow read, create, update, delete: if isCoupleMember(coupleId) && isWeddingCouple(coupleId);
       }
 
+      match /checklist/{checklistId} {
+        allow read, create, update, delete: if isCoupleMember(coupleId) && isWeddingCouple(coupleId);
+      }
+
+      match /guests/{guestId} {
+        allow read, create, update, delete: if isCoupleMember(coupleId) && isWeddingCouple(coupleId);
+      }
+
+      match /vendors/{vendorId} {
+        allow read, create, update, delete: if isCoupleMember(coupleId) && isWeddingCouple(coupleId);
+      }
+
       match /fcmTokens/{tokenId} {
         allow read: if isCoupleMember(coupleId);
         allow create, update: if isCoupleMember(coupleId)

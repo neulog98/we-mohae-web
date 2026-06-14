@@ -13,7 +13,7 @@ import {
   where
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
-import type { CoupleMode, Schedule, ScheduleCategory } from "@/types/domain";
+import type { AssigneeType, CoupleMode, Schedule, ScheduleCategory } from "@/types/domain";
 
 export interface ScheduleInput {
   title: string;
@@ -22,6 +22,9 @@ export interface ScheduleInput {
   endAt: Date | null;
   allDay: boolean;
   category: ScheduleCategory;
+  assignee: AssigneeType;
+  vendorName: string;
+  vendorContact: string;
   reminderEnabled: boolean;
   reminderMinutesBefore: number | null;
 }

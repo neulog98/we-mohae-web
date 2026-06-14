@@ -4,6 +4,23 @@ import { notificationId, sendOnce, sendToTokens } from "../utils/notifications";
 
 const KOREA_OFFSET_MS = 9 * 60 * 60 * 1000;
 
+type NotificationSettings = {
+  scheduleDayBefore?: boolean;
+  scheduleSameDay?: boolean;
+  budgetDueDate?: boolean;
+  checklistDueDate?: boolean;
+};
+
+function notificationSettings(data: FirebaseFirestore.DocumentData): Required<NotificationSettings> {
+  const settings = (data.notificationSettings ?? {}) as NotificationSettings;
+  return {
+    scheduleDayBefore: settings.scheduleDayBefore !== false,
+    scheduleSameDay: settings.scheduleSameDay !== false,
+    budgetDueDate: settings.budgetDueDate !== false,
+    checklistDueDate: settings.checklistDueDate !== false
+  };
+}
+
 function koreaDayRange(daysFromToday: number) {
   const koreaNow = new Date(Date.now() + KOREA_OFFSET_MS);
   const startAsKoreaUtc = Date.UTC(
@@ -36,6 +53,8 @@ export const scheduledReminderWorker = onSchedule(
 
     await Promise.all(
       couples.docs.map(async (couple) => {
+        const settings = notificationSettings(couple.data());
+        if (!settings.scheduleDayBefore && !settings.scheduleSameDay) return;
         const [schedules, tokenSnapshot] = await Promise.all([
           couple.ref
             .collection("schedules")
@@ -54,6 +73,8 @@ export const scheduledReminderWorker = onSchedule(
               const startAt = schedule.startAt?.toDate?.() as Date | undefined;
               if (!startAt) return Promise.resolve();
               const isToday = startAt >= today.start && startAt <= today.end;
+              if (isToday && !settings.scheduleSameDay) return Promise.resolve();
+              if (!isToday && !settings.scheduleDayBefore) return Promise.resolve();
               const target = isToday
                 ? { notificationType: "schedule-day-of-9am", dateKey: today.dateKey, label: "오늘" }
                 : { notificationType: "schedule-day-before-9am", dateKey: tomorrow.dateKey, label: "내일" };
@@ -94,6 +115,8 @@ export const scheduledBudgetPaymentReminderWorker = onSchedule(
     const couples = await admin.firestore().collection("couples").where("mode", "==", "wedding").get();
     await Promise.all(
       couples.docs.map(async (couple) => {
+        const settings = notificationSettings(couple.data());
+        if (!settings.budgetDueDate) return;
         const paymentTargets = [
           { field: "contractPaymentDate", notificationType: "contract-payment-day-before", label: "계약금" },
           { field: "paymentDate", notificationType: "balance-payment-day-before", label: "잔금" }
@@ -131,6 +154,59 @@ export const scheduledBudgetPaymentReminderWorker = onSchedule(
               });
             })
           )
+        );
+      })
+    );
+  }
+);
+
+export const scheduledChecklistReminderWorker = onSchedule(
+  {
+    schedule: "every day 09:00",
+    timeZone: "Asia/Seoul"
+  },
+  async () => {
+    const today = koreaDayRange(0);
+    const couples = await admin.firestore().collection("couples").where("mode", "==", "wedding").get();
+
+    await Promise.all(
+      couples.docs.map(async (couple) => {
+        const settings = notificationSettings(couple.data());
+        if (!settings.checklistDueDate) return;
+
+        const [checklistSnapshot, tokenSnapshot] = await Promise.all([
+          couple.ref
+            .collection("checklist")
+            .where("dueDate", ">=", admin.firestore.Timestamp.fromDate(today.start))
+            .where("dueDate", "<=", admin.firestore.Timestamp.fromDate(today.end))
+            .get(),
+          couple.ref.collection("fcmTokens").get()
+        ]);
+        const tokens = tokenSnapshot.docs.map((doc) => doc.data() as { token: string; userId: string });
+
+        await Promise.all(
+          checklistSnapshot.docs
+            .filter((checklistDoc) => {
+              const checklist = checklistDoc.data();
+              return checklist.completed !== true && checklist.status !== "done";
+            })
+            .map((checklistDoc) => {
+              const checklist = checklistDoc.data();
+              const id = notificationId(["checklist", checklistDoc.id, "due-date", today.dateKey]);
+              return sendOnce({
+                coupleId: couple.id,
+                id,
+                targetType: "checklist",
+                targetId: checklistDoc.id,
+                notificationType: "checklist-due-date",
+                sentToUserIds: tokens.map((token) => token.userId),
+                send: () =>
+                  sendToTokens(tokens.map((token) => token.token), "오늘 마감인 준비 항목이 있어요", checklist.title ?? "체크리스트를 확인해보세요", {
+                    coupleId: couple.id,
+                    checklistId: checklistDoc.id
+                  })
+              });
+            })
         );
       })
     );

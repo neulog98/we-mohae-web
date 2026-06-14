@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const root = process.cwd();
-const envPath = resolve(root, ".env.local");
+const envPaths = [resolve(root, ".env"), resolve(root, ".env.local")];
 const serviceWorkerPath = resolve(root, "out/firebase-messaging-sw.js");
 
 function parseEnvFile(path) {
@@ -21,7 +21,7 @@ function parseEnvFile(path) {
   );
 }
 
-const fileEnv = parseEnvFile(envPath);
+const fileEnv = envPaths.reduce((acc, path) => ({ ...acc, ...parseEnvFile(path) }), {});
 const env = { ...fileEnv, ...process.env };
 const replacements = {
   REPLACE_WITH_FIREBASE_API_KEY: env.NEXT_PUBLIC_FIREBASE_API_KEY,

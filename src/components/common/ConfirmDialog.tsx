@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import { useLockBodyScroll } from "@/hooks/useLockBodyScroll";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -19,6 +20,8 @@ export function ConfirmDialog({
   onConfirm,
   onClose
 }: ConfirmDialogProps) {
+  useLockBodyScroll(open);
+
   if (!open) return null;
 
   return (

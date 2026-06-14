@@ -32,6 +32,11 @@ export type BudgetCategory =
   | "기타";
 
 export type PayerType = "groom" | "bride" | "shared";
+export type AssigneeType = "groom" | "bride" | "shared";
+export type GuestSide = "groom" | "bride" | "shared";
+export type GuestAttendanceStatus = "pending" | "attending" | "declined";
+export type ChecklistStatus = "todo" | "inProgress" | "blocked" | "vendorCheck" | "done";
+export type VendorStatus = "candidate" | "contacted" | "quoted" | "contracted" | "rejected";
 export type FcmPlatform = "web" | "ios" | "android";
 
 export type FirestoreDate = Timestamp;
@@ -51,6 +56,9 @@ export interface Couple {
   mode: CoupleMode;
   memberIds: string[];
   inviteCode: string;
+  weddingDate?: FirestoreDate | null;
+  budgetGoalAmount?: number;
+  notificationSettings?: NotificationSettings;
   createdBy: string;
   createdAt: FirestoreDate;
   updatedAt: FirestoreDate;
@@ -65,6 +73,9 @@ export interface Schedule {
   allDay: boolean;
   category: ScheduleCategory;
   type: CoupleMode;
+  assignee?: AssigneeType;
+  vendorName?: string;
+  vendorContact?: string;
   createdBy: string;
   updatedBy: string;
   reminderEnabled: boolean;
@@ -81,16 +92,105 @@ export interface BudgetItem {
   estimatedAmount: number;
   contractAmount: number;
   paidAmount: number;
+  groomShareAmount?: number;
+  brideShareAmount?: number;
   payer: PayerType;
   paymentDate: FirestoreDate | null;
   contractPaymentDate?: FirestoreDate | null;
   balancePaymentDate?: FirestoreDate | null;
   memo: string;
+  vendorName?: string;
+  vendorContact?: string;
+  accountInfo?: string;
+  familySupportAmount?: number;
+  refundAmount?: number;
+  cardHolder?: string;
   relatedScheduleId: string | null;
   createdBy: string;
   updatedBy: string;
   createdAt: FirestoreDate;
   updatedAt: FirestoreDate;
+}
+
+export interface WeddingChecklistItem {
+  checklistId: string;
+  title: string;
+  description: string;
+  dueDate: FirestoreDate | null;
+  assignee: AssigneeType;
+  completed: boolean;
+  status?: ChecklistStatus;
+  completedAt: FirestoreDate | null;
+  order: number;
+  createdBy: string;
+  updatedBy: string;
+  createdAt: FirestoreDate;
+  updatedAt: FirestoreDate;
+}
+
+export interface Guest {
+  guestId: string;
+  name: string;
+  side: GuestSide;
+  relation: string;
+  phone: string;
+  attendanceStatus: GuestAttendanceStatus;
+  companionCount: number;
+  mealTicketCount: number;
+  giftChecked: boolean;
+  congratulatoryAmount: number;
+  memo: string;
+  createdBy: string;
+  updatedBy: string;
+  createdAt: FirestoreDate;
+  updatedAt: FirestoreDate;
+}
+
+export interface VendorAttachment {
+  attachmentId: string;
+  name: string;
+  url: string;
+  type: "contract" | "quote" | "photo" | "account" | "etc";
+}
+
+export interface VendorQuote {
+  quoteId: string;
+  title: string;
+  amount: number;
+  includedItems: string;
+  extraCostMemo: string;
+  validUntil: FirestoreDate | null;
+  createdAt: FirestoreDate;
+}
+
+export interface Vendor {
+  vendorId: string;
+  name: string;
+  category: BudgetCategory;
+  status: VendorStatus;
+  contactName: string;
+  phone: string;
+  address: string;
+  contractAmount: number;
+  depositAmount: number;
+  balanceAmount: number;
+  paymentDueDate: FirestoreDate | null;
+  memo: string;
+  attachments: VendorAttachment[];
+  quotes: VendorQuote[];
+  relatedBudgetId: string | null;
+  relatedScheduleId: string | null;
+  createdBy: string;
+  updatedBy: string;
+  createdAt: FirestoreDate;
+  updatedAt: FirestoreDate;
+}
+
+export interface NotificationSettings {
+  scheduleDayBefore: boolean;
+  scheduleSameDay: boolean;
+  budgetDueDate: boolean;
+  checklistDueDate: boolean;
 }
 
 export interface FcmToken {
@@ -103,7 +203,7 @@ export interface FcmToken {
 
 export interface SentNotification {
   notificationId: string;
-  targetType: "schedule" | "budget";
+  targetType: "schedule" | "budget" | "checklist";
   targetId: string;
   notificationType: string;
   sentAt: FirestoreDate;

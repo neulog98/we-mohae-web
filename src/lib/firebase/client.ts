@@ -2,7 +2,7 @@
 
 import { getApps, initializeApp } from "firebase/app";
 import { connectAuthEmulator, getAuth } from "firebase/auth";
-import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
+import { connectFirestoreEmulator, enableIndexedDbPersistence, getFirestore } from "firebase/firestore";
 import { getMessaging, isSupported } from "firebase/messaging";
 
 export const isFirebaseConfigured = Boolean(
@@ -29,6 +29,7 @@ export const db = getFirestore(firebaseApp);
 declare global {
   interface Window {
     __WE_MOHAE_FIREBASE_EMULATOR_CONNECTED__?: boolean;
+    __WE_MOHAE_FIRESTORE_PERSISTENCE_ENABLED__?: boolean;
   }
 }
 
@@ -40,6 +41,17 @@ if (
   connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
   connectFirestoreEmulator(db, "127.0.0.1", 8080);
   window.__WE_MOHAE_FIREBASE_EMULATOR_CONNECTED__ = true;
+}
+
+if (
+  typeof window !== "undefined" &&
+  process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR !== "true" &&
+  !window.__WE_MOHAE_FIRESTORE_PERSISTENCE_ENABLED__
+) {
+  window.__WE_MOHAE_FIRESTORE_PERSISTENCE_ENABLED__ = true;
+  enableIndexedDbPersistence(db).catch(() => {
+    // 멀티 탭 또는 브라우저 제한 환경에서는 네트워크 동기화만 사용한다.
+  });
 }
 
 export async function getFirebaseMessaging() {

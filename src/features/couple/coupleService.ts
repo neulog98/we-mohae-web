@@ -10,15 +10,20 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  Timestamp,
   updateDoc,
   where,
   writeBatch
 } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase/client";
-import type { Couple, CoupleMode } from "@/types/domain";
+import type { Couple, CoupleMode, NotificationSettings } from "@/types/domain";
 import { createInviteCode, normalizeInviteCode } from "@/utils/invite";
 
-export async function createCouple(uid: string, mode: CoupleMode) {
+export async function createCouple(
+  uid: string,
+  mode: CoupleMode,
+  options: { weddingDate?: Date | null; budgetGoalAmount?: number } = {}
+) {
   const coupleRef = doc(collection(db, "couples"));
   const coupleId = coupleRef.id;
   const inviteCode = createInviteCode();
@@ -27,6 +32,14 @@ export async function createCouple(uid: string, mode: CoupleMode) {
     mode,
     memberIds: [uid],
     inviteCode,
+    weddingDate: options.weddingDate ? Timestamp.fromDate(options.weddingDate) : null,
+    budgetGoalAmount: options.budgetGoalAmount ?? 0,
+    notificationSettings: {
+      scheduleDayBefore: true,
+      scheduleSameDay: true,
+      budgetDueDate: true,
+      checklistDueDate: true
+    },
     createdBy: uid,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
@@ -46,6 +59,16 @@ export async function createCouple(uid: string, mode: CoupleMode) {
   });
   await batch.commit();
   return coupleId;
+}
+
+export async function updateNotificationSettings(
+  coupleId: string,
+  settings: NotificationSettings
+) {
+  await updateDoc(doc(db, "couples", coupleId), {
+    notificationSettings: settings,
+    updatedAt: serverTimestamp()
+  });
 }
 
 export async function joinCoupleByInviteCode(uid: string, inviteCode: string) {

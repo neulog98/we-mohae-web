@@ -8,11 +8,11 @@ import { PasswordChangeForm } from "@/components/settings/PasswordChangeForm";
 import { AuthGate } from "@/components/layout/AuthGate";
 import { AppShell } from "@/components/layout/AppShell";
 import { signOutUser } from "@/features/auth/authService";
-import { changeCoupleMode, disconnectCouple } from "@/features/couple/coupleService";
+import { changeCoupleMode, disconnectCouple, updateNotificationSettings } from "@/features/couple/coupleService";
 import { removeCurrentNativeFcmToken, requestAndSaveFcmToken } from "@/features/notification/notificationService";
 import { useCouple } from "@/hooks/useCouple";
 import { useToast } from "@/components/common/Toast";
-import type { CoupleMode, UserProfile } from "@/types/domain";
+import type { CoupleMode, NotificationSettings, UserProfile } from "@/types/domain";
 import { copyTextToClipboard } from "@/utils/clipboard";
 import { getUserFacingErrorMessage } from "@/utils/errors";
 
@@ -48,6 +48,17 @@ function SettingsContent({ profile }: { profile: UserProfile }) {
       showToast("알림 권한과 FCM 토큰을 저장했어요.", "success");
     } catch (error) {
       showToast(getUserFacingErrorMessage(error, "알림 설정에 실패했어요."), "error");
+    }
+  }
+
+  async function handleNotificationSettingChange(key: keyof NotificationSettings, checked: boolean) {
+    if (!profile.coupleId) return;
+    const current = couple?.notificationSettings ?? defaultNotificationSettings;
+    try {
+      await updateNotificationSettings(profile.coupleId, { ...current, [key]: checked });
+      showToast("알림 설정을 저장했어요.", "success");
+    } catch (error) {
+      showToast(getUserFacingErrorMessage(error, "알림 설정 저장에 실패했어요."), "error");
     }
   }
 
@@ -164,6 +175,17 @@ function SettingsContent({ profile }: { profile: UserProfile }) {
           <Bell size={18} />
           알림 권한 요청
         </button>
+        {mode === "wedding" && (
+          <div className="rounded-lg bg-white p-5 shadow-soft">
+            <h2 className="font-semibold text-ink">알림 상세 설정</h2>
+            <div className="mt-4 space-y-3">
+              <NotificationToggle label="일정 하루 전" checked={(couple?.notificationSettings ?? defaultNotificationSettings).scheduleDayBefore} onChange={(checked) => handleNotificationSettingChange("scheduleDayBefore", checked)} />
+              <NotificationToggle label="일정 당일" checked={(couple?.notificationSettings ?? defaultNotificationSettings).scheduleSameDay} onChange={(checked) => handleNotificationSettingChange("scheduleSameDay", checked)} />
+              <NotificationToggle label="결제일" checked={(couple?.notificationSettings ?? defaultNotificationSettings).budgetDueDate} onChange={(checked) => handleNotificationSettingChange("budgetDueDate", checked)} />
+              <NotificationToggle label="체크리스트 마감일" checked={(couple?.notificationSettings ?? defaultNotificationSettings).checklistDueDate} onChange={(checked) => handleNotificationSettingChange("checklistDueDate", checked)} />
+            </div>
+          </div>
+        )}
         <button onClick={handleLogout} className="flex w-full items-center justify-center gap-2 rounded-md border border-neutral-200 bg-white py-3 text-sm font-semibold text-ink">
           <LogOut size={18} />
           로그아웃
@@ -217,5 +239,21 @@ function SettingsContent({ profile }: { profile: UserProfile }) {
         }}
       />
     </AppShell>
+  );
+}
+
+const defaultNotificationSettings: NotificationSettings = {
+  scheduleDayBefore: true,
+  scheduleSameDay: true,
+  budgetDueDate: true,
+  checklistDueDate: true
+};
+
+function NotificationToggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
+  return (
+    <label className="flex items-center justify-between gap-3 rounded-md bg-cloud px-4 py-3 text-sm font-semibold text-ink">
+      <span>{label}</span>
+      <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />
+    </label>
   );
 }

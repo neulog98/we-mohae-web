@@ -91,6 +91,8 @@ async function seedWeddingCouple(auth: Auth, db: Firestore, weddingOwnerUid: str
   const scheduleAt = Timestamp.fromDate(today);
   const contractDate = Timestamp.fromDate(new Date("2026-06-10T00:00:00+09:00"));
   const balanceDate = Timestamp.fromDate(new Date("2026-06-30T00:00:00+09:00"));
+  const weddingDate = Timestamp.fromDate(new Date("2026-12-12T12:00:00+09:00"));
+  const checklistDueDate = Timestamp.fromDate(new Date("2026-07-01T00:00:00+09:00"));
 
   await signInWithEmailAndPassword(auth, e2eUsers.weddingOwner.email, password);
 
@@ -107,6 +109,8 @@ async function seedWeddingCouple(auth: Auth, db: Firestore, weddingOwnerUid: str
     mode: "wedding",
     memberIds: [weddingOwnerUid, weddingPartnerUid],
     inviteCode: e2eSeed.weddingInviteCode,
+    weddingDate,
+    budgetGoalAmount: 30000000,
     createdBy: weddingOwnerUid,
     createdAt,
     updatedAt: createdAt
@@ -125,6 +129,9 @@ async function seedWeddingCouple(auth: Auth, db: Firestore, weddingOwnerUid: str
     allDay: false,
     category: "웨딩홀",
     type: "wedding",
+    assignee: "shared",
+    vendorName: "QA 웨딩홀",
+    vendorContact: "02-0000-0000",
     createdBy: weddingOwnerUid,
     updatedBy: weddingOwnerUid,
     reminderEnabled: false,
@@ -141,6 +148,9 @@ async function seedWeddingCouple(auth: Auth, db: Firestore, weddingOwnerUid: str
     allDay: false,
     category: "데이트",
     type: "couple",
+    assignee: "shared",
+    vendorName: "",
+    vendorContact: "",
     createdBy: weddingOwnerUid,
     updatedBy: weddingOwnerUid,
     reminderEnabled: false,
@@ -156,11 +166,77 @@ async function seedWeddingCouple(auth: Auth, db: Firestore, weddingOwnerUid: str
     estimatedAmount: 1000000,
     contractAmount: 300000,
     paidAmount: 300000,
+    groomShareAmount: 150000,
+    brideShareAmount: 150000,
     payer: "shared",
     paymentDate: balanceDate,
     contractPaymentDate: contractDate,
     balancePaymentDate: balanceDate,
     memo: "QA seed",
+    vendorName: "QA 웨딩홀",
+    vendorContact: "02-0000-0000",
+    accountInfo: "QA은행 000-0000-0000",
+    relatedScheduleId: "qa-wedding-schedule",
+    createdBy: weddingOwnerUid,
+    updatedBy: weddingOwnerUid,
+    createdAt,
+    updatedAt: createdAt
+  });
+  await setDoc(doc(db, "couples", e2eSeed.weddingCoupleId, "checklist", "qa-checklist-venue"), {
+    checklistId: "qa-checklist-venue",
+    title: "웨딩홀 후보 비교",
+    description: "보증 인원, 식대, 대관료를 비교한다.",
+    dueDate: checklistDueDate,
+    assignee: "shared",
+    completed: false,
+    completedAt: null,
+    order: 1,
+    createdBy: weddingOwnerUid,
+    updatedBy: weddingOwnerUid,
+    createdAt,
+    updatedAt: createdAt
+  });
+  await setDoc(doc(db, "couples", e2eSeed.weddingCoupleId, "guests", "qa-guest"), {
+    guestId: "qa-guest",
+    name: "QA 하객",
+    side: "groom",
+    relation: "친구",
+    phone: "010-0000-0000",
+    attendanceStatus: "attending",
+    companionCount: 1,
+    mealTicketCount: 2,
+    giftChecked: false,
+    congratulatoryAmount: 100000,
+    memo: "QA seed",
+    createdBy: weddingOwnerUid,
+    updatedBy: weddingOwnerUid,
+    createdAt,
+    updatedAt: createdAt
+  });
+  await setDoc(doc(db, "couples", e2eSeed.weddingCoupleId, "vendors", "qa-vendor"), {
+    vendorId: "qa-vendor",
+    name: "QA 웨딩홀",
+    category: "웨딩홀",
+    status: "contracted",
+    contactName: "QA 담당자",
+    phone: "02-0000-0000",
+    address: "서울",
+    contractAmount: 1000000,
+    depositAmount: 300000,
+    balanceAmount: 700000,
+    paymentDueDate: balanceDate,
+    memo: "QA vendor seed",
+    attachments: [{ attachmentId: "qa-attachment", name: "계약서", url: "https://example.com/contract", type: "contract" }],
+    quotes: [{
+      quoteId: "qa-quote",
+      title: "기본 견적",
+      amount: 1000000,
+      includedItems: "대관료",
+      extraCostMemo: "식대 별도",
+      validUntil: null,
+      createdAt
+    }],
+    relatedBudgetId: "qa-budget",
     relatedScheduleId: "qa-wedding-schedule",
     createdBy: weddingOwnerUid,
     updatedBy: weddingOwnerUid,

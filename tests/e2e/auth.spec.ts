@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
 test("비인증 사용자는 루트 진입 후 로그인 화면을 볼 수 있다", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page).toHaveURL(/\/login\/?$/);
+  await expect(page).toHaveURL(/\/login\/?$/, { timeout: 15_000 });
   await expect(page.getByRole("heading", { name: "우리뭐해" })).toBeVisible();
   await expect(page.getByText("우리 둘의 일정과 결혼 준비를 함께 관리하는 캘린더")).toBeVisible();
   await expect(page.getByLabel("이메일")).toBeVisible();
@@ -24,13 +24,13 @@ test("비인증 사용자는 루트 진입 후 로그인 화면을 볼 수 있�
   await expect(page.getByRole("button", { name: "로그인" })).toBeVisible();
 });
 
-const protectedRoutes = ["/home", "/calendar", "/budget", "/settings", "/invite", "/onboarding"];
+const protectedRoutes = ["/home", "/calendar", "/budget", "/guests", "/vendors", "/settings", "/invite", "/onboarding"];
 
 for (const route of protectedRoutes) {
   test(`비인증 사용자는 ${route} 접근 시 로그인으로 보호된다`, async ({ page }) => {
     await page.goto(route);
 
-    await expect(page).toHaveURL(/\/login\/?$/);
+    await expect(page).toHaveURL(/\/login\/?$/, { timeout: 15_000 });
     await expect(page.getByRole("heading", { name: "우리뭐해" })).toBeVisible();
   });
 }

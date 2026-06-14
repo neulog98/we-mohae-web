@@ -6,10 +6,10 @@ const baseURL = `http://127.0.0.1:${port}`;
 export default defineConfig({
   testDir: "./tests/e2e",
   globalSetup: process.env.E2E_USE_FIREBASE_EMULATOR === "true" ? "./tests/e2e/global-setup.ts" : undefined,
-  fullyParallel: true,
+  fullyParallel: process.env.E2E_USE_FIREBASE_EMULATOR !== "true",
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI || process.env.E2E_USE_FIREBASE_EMULATOR === "true" ? 1 : undefined,
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
     baseURL,
